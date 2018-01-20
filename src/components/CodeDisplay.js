@@ -6,16 +6,16 @@ class CodeDisplay extends Component {
         return null;
       }
 
-      let increaseScoreCodeString = (() => {
-        // score += 1;
+      let increaseScoreCodeString = ((score) => {
+         score += 1;
       }).toString();
 
       let increaseScoreCode = `  score += ${this.props.clickBase};`;
 
       if (this.props.loopBought || true) {
-        increaseScoreCodeString = (() => {
+        increaseScoreCodeString = ((score) => {
           for (let i = 0; i < 10; i++) {
-            // score += this.props.clickBase;
+             score += this.props.clickBase;
           }
         }).toString();
       }

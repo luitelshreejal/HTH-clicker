@@ -3,9 +3,13 @@ import './App.css';
 import ShopButton from './components/ShopButton';
 import Score from './components/Score';
 import CodeDisplay from './components/CodeDisplay';
+import Inventory from './components/Inventory';
+import ProgressBar from './components/ProgressBar'
+
+
 
 const UPGRADES = [
-  {title:'visualizer', cost:'5'},
+
   {title:'timer',cost:'30'},
   {title:'improveClicks1', cost:'50'},
   {title:'scoreHeader', cost:'100'},
@@ -14,16 +18,91 @@ const UPGRADES = [
   {title:'upgradesHeader', cost:'80'},
   {title:'someStyling1', cost:'40'},
   {title:'localSave', cost:'120'},
-  {title:'loop', cost:'150'},
-  {title:'showCSS', cost:'300'}
+  {title:'loop', cost:'10'},
+  {title:'showCSS', cost:'300'},
+  {title: "food", cost:"10"},
+  {title: "weapons", cost:"7"},
+  {title: "treasure", cost:"50"},
+  {title: "monsters", cost:"-1"},
+    {title:'merchandise', cost:'5'},
+
 ];
+
+const ITEMS = {
+
+food: [
+{name: "apple"},
+{name: "potato chips"},
+{name: "juice"}
+],
+
+weapons: [
+{name: "AK-47"},
+{name: "axe"},
+{name: "Tanks"},
+{name: "arrows"}
+],
+
+merchandise:  [
+  {name: "Wild Shield Backpack"},
+  {name: "Master Sword"},
+  {name: "triforce light"},
+  {name: "horses"},
+  {name: "parachute"}
+],
+
+monsters: [
+  {name: "Moblin"},
+  {name: "Armos"},
+  {name: "Lynel"},
+  {name: "Wizzrobe"},
+  {name: "Octorok"},
+],
+
+treasure: [
+  {name: "Oakles"},
+  {name: "Rubies"},
+  {name: "Saphires"},
+  {name: "Diamonds"},
+]
+}
+
+function compareUpgrades(a, b) {
+  return b.cost - a.cost
+}
+
+function calculateProgress (currentScore) {
+  const sortedUpgrades = UPGRADES.slice()
+  sortedUpgrades.sort(compareUpgrades)
+  console.log({sortedUpgrades})
+
+  let nextAvailable
+
+  for (var i = 1; i < sortedUpgrades.length; i++) {
+    if (currentScore < sortedUpgrades[i].cost) nextAvailable = sortedUpgrades[i]
+  }
+
+  console.log(nextAvailable, currentScore/nextAvailable.cost)
+
+  return (currentScore/nextAvailable.cost) * 100
+
+}
+
+calculateProgress(10)
 
 const DEFAULT_STATE = {
   score: 0,
   timerBase: 1,
   timerInterval: 5000,
   clickBase: 1,
-  loopbase: 1
+  loopbase: 1,
+  inventory: {
+    weapons: [],
+    merchandise: [],
+    monsters: [],
+    treasure: [],
+    food: []
+  },
 };
 
 class App extends Component {
@@ -54,7 +133,7 @@ class App extends Component {
 
   render() {
     const { state, increaseScore, createShopButtons } = this;
-    const { upgradesHeader, score, scoreHeader, visualizer } = state;
+    const { upgradesHeader, score, scoreHeader, merchandise } = state;
     const styles = this.state.someStyling1 ? "style1" : "";
 
     const codeDisplayProps = {
@@ -67,6 +146,7 @@ class App extends Component {
       cssBought: state.showCSS
     };
 
+window.calculateProgress = calculateProgress
     return (
       <div className="App">
          <div id="clicker" className={styles}>
@@ -78,12 +158,26 @@ class App extends Component {
           {createShopButtons(UPGRADES)}
          </div>
          <div id="scores" className={styles}>
-           <Score visualizer={visualizer} score={score} headerBought={scoreHeader}/>
+           <Score merchandise={merchandise} score={score} headerBought={scoreHeader}/>
            <CodeDisplay { ...codeDisplayProps }/>
+           <Inventory items={state.inventory.food}/>
+           <Inventory items={state.inventory.monsters}/>
+           <Inventory items={state.inventory.merchandise}/>
+           <Inventory items={state.inventory.treasure}/>
+           <Inventory items={state.inventory.weapons}/>
+
+           <ProgressBar value={Math.floor(calculateProgress(state.score))} />
+
           </div>
       </div>
     );
   }
+
+addItem = (inventory, type) => {
+  const randomNumber = Math.floor(Math.random() * ITEMS[type].length)
+  inventory[type].push(ITEMS[type][randomNumber])
+  return inventory
+}
 
   buy = (cost, upgrade) => {
     if (upgrade === 'timer') {
@@ -101,10 +195,24 @@ class App extends Component {
     if (upgrade === 'loop') {
       this.setState({loopbase: 10}, this.save());
     }
-
+if (upgrade === "food") {
+  this.setState({inventory: this.addItem(this.state.inventory, "food")})
+}
+if (upgrade === "weapons") {
+  this.setState({inventory: this.addItem(this.state.inventory, "weapons")})
+}
+if (upgrade === "merchandise") {
+  this.setState({inventory: this.addItem(this.state.inventory, "merchandise")})
+}
+if (upgrade === "treasure") {
+  this.setState({inventory: this.addItem(this.state.inventory, "treasure")})
+}
+if (upgrade === "monsters") {
+  this.setState({inventory: this.addItem(this.state.inventory, "monsters")})
+}
     this.setState((prevState) => ({
       score : prevState.score - cost,
-      [upgrade]: true
+      [upgrade]: !(upgrade === 'food' || upgrade === 'weapons' || upgrade === 'merchandise' || upgrade === 'treasure' || upgrade === 'monsters')
     }), this.save());
   }
 
